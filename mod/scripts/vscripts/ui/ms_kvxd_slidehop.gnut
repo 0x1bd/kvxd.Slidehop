@@ -1,0 +1,96 @@
+global function KvxdSlidehop_AddModSettings
+global function KvxdSlidehop_UIApplyBind
+global function KvxdSlidehop_UIPress
+global function KvxdSlidehop_UIRelease
+global function KvxdSlidehop_UIRunClientCommand
+
+
+void function KvxdSlidehop_AddModSettings()
+{
+	ModSettings_AddModTitle( "kvxd.^19FFD700Slidehop" )
+
+	ModSettings_AddModCategory( "Controls" )
+	ModSettings_AddEnumSetting( "kvxd_slidehop_enabled", "Slidehop", [ "Disabled", "Enabled" ] )
+	ModSettings_AddSetting( "kvxd_slidehop_key", "Slidehop bind key", "string" )
+	ModSettings_AddEnumSetting( "kvxd_slidehop_auto_bind", "Apply bind on map load", [ "Disabled", "Enabled" ] )
+	ModSettings_AddButton( "Apply bind now", KvxdSlidehop_UIApplyBind )
+}
+
+
+void function KvxdSlidehop_UIApplyBind()
+{
+	string key = GetConVarString( "kvxd_slidehop_key" )
+	string oldKey = GetConVarString( "kvxd_slidehop_bound_key" )
+
+	if ( oldKey != "" && !KvxdSlidehop_StringUnsafeForQuotedCommand( oldKey ) && oldKey != key )
+		ClientCommand( "unbind \"" + oldKey + "\"" )
+
+	if ( key == "" )
+	{
+		ClientCommand( "kvxd_slidehop_bound_key \"\"" )
+		return
+	}
+
+	if ( KvxdSlidehop_StringUnsafeForQuotedCommand( key ) )
+		return
+
+	ClientCommand( "bind \"" + key + "\" \"+kvxd_slidehop\"" )
+	ClientCommand( "kvxd_slidehop_bound_key \"" + key + "\"" )
+}
+
+
+void function KvxdSlidehop_UIPress( var arg1 = null, var arg2 = null )
+{
+	RunClientScript( "KvxdSlidehop_Start" )
+}
+
+
+void function KvxdSlidehop_UIRelease( var arg1 = null, var arg2 = null )
+{
+	RunClientScript( "KvxdSlidehop_Stop" )
+}
+
+
+void function KvxdSlidehop_UIRunClientCommand( string command )
+{
+	if ( command == "" )
+		return
+
+	if ( KvxdSlidehop_CommandUnsafe( command ) )
+		return
+
+	ClientCommand( command )
+}
+
+
+bool function KvxdSlidehop_StringUnsafeForQuotedCommand( string value )
+{
+	if ( value.find( ";" ) != null )
+		return true
+
+	if ( value.find( "\"" ) != null )
+		return true
+
+	if ( value.find( "\n" ) != null )
+		return true
+
+	if ( value.find( "\r" ) != null )
+		return true
+
+	return false
+}
+
+
+bool function KvxdSlidehop_CommandUnsafe( string value )
+{
+	if ( value.find( ";" ) != null )
+		return true
+
+	if ( value.find( "\n" ) != null )
+		return true
+
+	if ( value.find( "\r" ) != null )
+		return true
+
+	return false
+}

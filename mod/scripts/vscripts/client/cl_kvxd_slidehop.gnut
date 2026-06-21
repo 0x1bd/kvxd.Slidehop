@@ -1,0 +1,99 @@
+global function KvxdSlidehop_ClientInit
+global function KvxdSlidehop_Start
+global function KvxdSlidehop_Stop
+
+const float KVXD_SLIDEHOP_POLL_INTERVAL = 0.01
+const float KVXD_SLIDEHOP_JUMP_HOLD_TIME = 0.03
+const string KVXD_SLIDEHOP_DUCK_PRESS_CMD = "+duck"
+const string KVXD_SLIDEHOP_DUCK_RELEASE_CMD = "-duck"
+const string KVXD_SLIDEHOP_JUMP_PRESS_CMD = "+jump"
+const string KVXD_SLIDEHOP_JUMP_RELEASE_CMD = "-jump"
+
+bool kvxdSlidehopHeld = false
+bool kvxdSlidehopLoopRunning = false
+bool kvxdSlidehopDuckHeld = false
+bool kvxdSlidehopJumpHeld = false
+
+
+void function KvxdSlidehop_ClientInit()
+{
+	if ( GetConVarBool( "kvxd_slidehop_auto_bind" ) )
+		thread KvxdSlidehop_AutoBindThread()
+}
+
+
+void function KvxdSlidehop_AutoBindThread()
+{
+	wait 0.5
+	RunUIScript( "KvxdSlidehop_UIApplyBind" )
+}
+
+
+void function KvxdSlidehop_Start()
+{
+	if ( !GetConVarBool( "kvxd_slidehop_enabled" ) )
+		return
+
+	kvxdSlidehopHeld = true
+
+	if ( !kvxdSlidehopLoopRunning )
+		thread KvxdSlidehop_HoldLoop()
+}
+
+
+void function KvxdSlidehop_Stop()
+{
+	kvxdSlidehopHeld = false
+	KvxdSlidehop_ReleaseHeldCommands()
+}
+
+
+void function KvxdSlidehop_HoldLoop()
+{
+	kvxdSlidehopLoopRunning = true
+
+	KvxdSlidehop_UICommand( KVXD_SLIDEHOP_DUCK_PRESS_CMD )
+	kvxdSlidehopDuckHeld = true
+
+	while ( kvxdSlidehopHeld && GetConVarBool( "kvxd_slidehop_enabled" ) )
+	{
+		entity player = GetLocalClientPlayer()
+		if ( IsValid( player ) && player.IsOnGround() && !kvxdSlidehopJumpHeld )
+		{
+			KvxdSlidehop_UICommand( KVXD_SLIDEHOP_JUMP_PRESS_CMD )
+			kvxdSlidehopJumpHeld = true
+
+			wait KVXD_SLIDEHOP_JUMP_HOLD_TIME
+
+			KvxdSlidehop_UICommand( KVXD_SLIDEHOP_JUMP_RELEASE_CMD )
+			kvxdSlidehopJumpHeld = false
+		}
+
+		wait KVXD_SLIDEHOP_POLL_INTERVAL
+	}
+
+	KvxdSlidehop_ReleaseHeldCommands()
+	kvxdSlidehopLoopRunning = false
+}
+
+
+void function KvxdSlidehop_ReleaseHeldCommands()
+{
+	if ( kvxdSlidehopJumpHeld )
+	{
+		KvxdSlidehop_UICommand( KVXD_SLIDEHOP_JUMP_RELEASE_CMD )
+		kvxdSlidehopJumpHeld = false
+	}
+
+	if ( kvxdSlidehopDuckHeld )
+	{
+		KvxdSlidehop_UICommand( KVXD_SLIDEHOP_DUCK_RELEASE_CMD )
+		kvxdSlidehopDuckHeld = false
+	}
+}
+
+
+void function KvxdSlidehop_UICommand( string command )
+{
+	RunUIScript( "KvxdSlidehop_UIRunClientCommand", command )
+}

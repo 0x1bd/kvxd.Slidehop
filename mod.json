@@ -1,0 +1,33 @@
+{
+  "Name": "kvxd.Slidehop",
+  "Description": "Slightly cheaty mod that automatically performs perfect slidehops.",
+  "Version": "1.0.5",
+  "LoadPriority": 1,
+
+  "ConVars": [
+    { "Name": "kvxd_slidehop_enabled", "DefaultValue": "1", "Flags": 16777216, "HelpString": "Enable kvxd.Slidehop." },
+    { "Name": "kvxd_slidehop_key", "DefaultValue": "F6", "Flags": 16777216, "HelpString": "Key used for kvxd.Slidehop. Examples: B, F6, V, MOUSE4, MOUSE5, LSHIFT." },
+    { "Name": "kvxd_slidehop_bound_key", "DefaultValue": "", "Flags": 16777216, "HelpString": "Internal" },
+    { "Name": "kvxd_slidehop_auto_bind", "DefaultValue": "1", "Flags": 16777216, "HelpString": "Automatically bind kvxd_slidehop_key to +kvxd_slidehop after client map load." }
+  ],
+
+  "ConCommands": [
+    { "Name": "+kvxd_slidehop", "Function": "KvxdSlidehop_UIPress", "Context": "UI", "HelpString": "Start holding kvxd.Slidehop." },
+    { "Name": "-kvxd_slidehop", "Function": "KvxdSlidehop_UIRelease", "Context": "UI", "HelpString": "Stop holding kvxd.Slidehop." }
+  ],
+
+  "Scripts": [
+    {
+      "Path": "client/cl_kvxd_slidehop.gnut",
+      "RunOn": "CLIENT && MP && !LOBBY",
+      "ClientCallback": { "After": "KvxdSlidehop_ClientInit" }
+    },
+    {
+      "Path": "ui/ms_kvxd_slidehop.gnut",
+      "RunOn": "UI",
+      "UICallback": { "Before": "KvxdSlidehop_AddModSettings" }
+    }
+  ],
+
+  "Localisation": []
+}
